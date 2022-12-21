@@ -44,7 +44,7 @@ func TestSyncMapRange(t *testing.T){
 		state := value.(int)
 		log.Printf("key: %+v, value: %d\n", userActivity, state)
 		m.Store(userActivity, state+1)
-		// log.Printf("===key: %+v, value: %d\n", userActivity, state)
+		log.Printf("===key: %+v, value: %d\n", userActivity, state)
 		return true
 	})
 	log.Println("================================================================")
