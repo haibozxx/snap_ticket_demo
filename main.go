@@ -54,6 +54,9 @@ func main() {
 
 	log.Printf("activity: %d, personnel: %d, ip count: %d", len(activity), len(personnel), len(ipList))
 	// ctx := context.Background()
+	//控制总并发数
+	parallelNum := 5000	
+	parallelChan := make(chan struct{}, parallelNum)
 	
 	//此任务的核心问题在于proxy ip，proxy ip足够多的请求下可以有足够多的并发去抢购
 	for {
@@ -84,11 +87,16 @@ func main() {
 		randomNum := rand.Intn(len(userActUnRespList))
 		randomUserAct := userActUnRespList[randomNum]
 		go func(ipAddr *string, userActivity *UserActivity){
+
+			parallelChan <- struct{}{}
+
 			log.Printf("ip: %s, user: %s, activity: %s is running \n", *ipAddr, userActivity.Personnel, userActivity.Activity)
 			targetUrl := fmt.Sprintf("https://www.baidu.com/%s/%s", userActivity.Personnel, userActivity.Activity)
 			proxyUrl, err := url.Parse(*ipAddr)
 			if err != nil{
 				log.Println("proxy ip parse error", err)
+
+				<- parallelChan
 				return
 			}
 			client := http.Client{
@@ -107,11 +115,15 @@ func main() {
 				if oldState != 1{
 					userActStateMap.Store(userActivity, 2)
 				}
+
+				<- parallelChan
 				return
 			}
 			if resp.StatusCode == http.StatusOK{
 				userActStateMap.Store(userActivity, 1)
 			}
+
+			<- parallelChan
 		}(ipAddr, randomUserAct)
 	}
 }
