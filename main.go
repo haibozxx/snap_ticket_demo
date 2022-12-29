@@ -86,9 +86,9 @@ func main() {
 		rand.Seed(time.Now().UnixNano())
 		randomNum := rand.Intn(len(userActUnRespList))
 		randomUserAct := userActUnRespList[randomNum]
-		go func(ipAddr *string, userActivity *UserActivity){
 
-			parallelChan <- struct{}{}
+		parallelChan <- struct{}{}
+		go func(ipAddr *string, userActivity *UserActivity){
 
 			log.Printf("ip: %s, user: %s, activity: %s is running \n", *ipAddr, userActivity.Personnel, userActivity.Activity)
 			targetUrl := fmt.Sprintf("https://www.baidu.com/%s/%s", userActivity.Personnel, userActivity.Activity)
